@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sarvam Translator — English ⇄ हिन्दी</title>
+<style>
+  :root{
+    --bg:#0f1220;
+    --panel:#171a2e;
+    --panel-2:#1e2340;
+    --stroke:#2a3057;
+    --text:#eef0ff;
+    --muted:#9aa0c7;
+    --accent:#ff7a3d;
+    --accent-2:#ffb15c;
+    --ok:#37d39b;
+    --err:#ff6b6b;
+    --radius:16px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Devanagari",Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(255,122,61,.18), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(90,120,255,.16), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  header{
+    padding:22px 28px 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{
+    width:38px;height:38px;border-radius:11px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;font-weight:800;color:#1a1206;font-size:18px;
+    box-shadow:0 6px 18px rgba(255,122,61,.35);
+  }
+  .brand h1{font-size:1.05rem;margin:0;font-weight:700;letter-spacing:.2px}
+  .brand p{margin:2px 0 0;font-size:.78rem;color:var(--muted)}
+  .keybox{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .keybox input{
+    background:var(--panel);border:1px solid var(--stroke);color:var(--text);
+    padding:10px 12px;border-radius:10px;font-size:.85rem;width:260px;outline:none;
+  }
+  .keybox input:focus{border-color:var(--accent)}
+  .status{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--muted)}
+  .dot{width:9px;height:9px;border-radius:50%;background:#666;transition:.2s}
+  .dot.on{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .dot.off{background:var(--err)}
+
+  main{
+    flex:1;
+    padding:14px 28px 28px;
+    display:grid;
+    grid-template-columns:1fr 56px 1fr;
+    gap:16px;
+    align-items:stretch;
+    max-width:1180px;
+    width:100%;
+    margin:0 auto;
+  }
+  .panel{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--stroke);
+    border-radius:var(--radius);
+    display:flex;flex-direction:column;
+    min-height:340px;
+    overflow:hidden;
+  }
+  .panel-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;border-bottom:1px solid var(--stroke);
+  }
+  .lang{display:flex;align-items:center;gap:9px;font-weight:600;font-size:.9rem}
+  .lang .tag{
+    font-size:.68rem;font-weight:600;color:var(--muted);
+    background:rgba(255,255,255,.05);border:1px solid var(--stroke);
+    padding:3px 8px;border-radius:20px;letter-spacing:.4px;
+  }
+  .tools{display:flex;gap:6px}
+  .icon-btn{
+    background:rgba(255,255,255,.04);border:1px solid var(--stroke);
+    color:var(--muted);border-radius:9px;width:34px;height:34px;cursor:pointer;
+    display:grid;place-items:center;font-size:.95rem;transition:.15s;
+  }
+  .icon-btn:hover{color:var(--text);border-color:var(--accent);background:rgba(255,122,61,.1)}
+  textarea,.output{
+    flex:1;width:100%;border:0;outline:none;resize:none;background:transparent;
+    color:var(--text);font-size:1.08rem;line-height:1.6;padding:18px 16px;
+    font-family:inherit;
+  }
+  textarea::placeholder{color:#5f6690}
+  .output{
+    overflow-y:auto;white-space:pre-wrap;word-break:break-word;
+  }
+  .output .placeholder{color:#5f6690}
+  .output .err{color:var(--err);font-size:.92rem}
+  .output .loading{color:var(--muted);font-style:italic}
+
+  .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+  .swap{
+    width:48px;height:48px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    border:0;color:#1a1206;font-size:1.2rem;cursor:pointer;
+    display:grid;place-items:center;
+    box-shadow:0 8px 22px rgba(255,122,61,.4);transition:.18s;
+  }
+  .swap:hover{transform:rotate(180deg) scale(1.05)}
+
+  .panel-foot{
+    border-top:1px solid var(--stroke);
+    padding:11px 16px;display:flex;align-items:center;justify-content:space-between;
+    font-size:.76rem;color:var(--muted);gap:10px;flex-wrap:wrap;
+  }
+  .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select{
+    background:var(--panel);border:1px solid var(--stroke);color:var(--text);
+    border-radius:8px;padding:5px 8px;font-size:.76rem;outline:none;cursor:pointer;
+  }
+  .cta{
+    display:flex;gap:10px;align-items:center;
+  }
+  .btn{
+    border:0;border-radius:11px;padding:12px 26px;font-size:.95rem;font-weight:700;
+    cursor:pointer;transition:.15s;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#1a1206;box-shadow:0 8px 22px rgba(255,122,61,.35);
+  }
+  .btn-primary:hover{filter:brightness(1.07)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+  .btn-ghost{background:rgba(255,255,255,.05);border:1px solid var(--stroke);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--accent)}
+
+  .bar{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    max-width:1180px;margin:0 auto;width:100%;padding:0 28px 22px;flex-wrap:wrap;
+  }
+  .hint{font-size:.78rem;color:var(--muted)}
+  kbd{background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:6px;padding:2px 6px;font-size:.72rem}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--panel);border:1px solid var(--stroke);color:var(--text);
+    padding:11px 18px;border-radius:12px;font-size:.85rem;opacity:0;pointer-events:none;
+    transition:.25s;box-shadow:0 12px 30px rgba(0,0,0,.4);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:820px){
+    main{grid-template-columns:1fr;gap:12px}
+    .mid{flex-direction:row}
+    .swap:hover{transform:rotate(90deg) scale(1.05)}
+    .keybox input{width:100%}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">स</div>
+      <div>
+        <h1>Sarvam Translator</h1>
+        <p>English &nbsp;⇄&nbsp; हिन्दी &nbsp;·&nbsp; powered by Sarvam AI</p>
+      </div>
+    </div>
+    <div class="keybox">
+      <div class="status"><span class="dot" id="dot"></span><span id="statusText">No API key</span></div>
+      <input id="apiKey" type="password" placeholder="Paste your Sarvam API key" autocomplete="off" />
+      <select id="conn" title="How the browser reaches the API">
+        <option value="direct">Direct (browser)</option>
+        <option value="proxy">Local proxy</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="panel-head">
+        <div class="lang"><span id="srcLabel">English</span><span class="tag" id="srcTag">en-IN</span></div>
+        <div class="tools">
+          <button class="icon-btn" id="clearBtn" title="Clear">✕</button>
+          <button class="icon-btn" id="pasteBtn" title="Paste from clipboard">⎘</button>
+        </div>
+      </div>
+      <textarea id="src" placeholder="Type or paste English here…  (Ctrl/⌘ + Enter to translate)"></textarea>
+      <div class="panel-foot">
+        <span id="countWrap"><span id="count">0</span> / <span id="maxlen">2000</span> characters</span>
+        <span>Speaker:&nbsp;
+          <select id="gender">
+            <option value="">Unspecified</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </span>
+      </div>
+    </section>
+
+    <div class="mid">
+      <button class="swap" id="swapBtn" title="Swap languages">⇄</button>
+    </div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="lang"><span id="tgtLabel">हिन्दी</span><span class="tag" id="tgtTag">hi-IN</span></div>
+        <div class="tools">
+          <button class="icon-btn" id="speakBtn" title="Listen">🔊</button>
+          <button class="icon-btn" id="copyBtn" title="Copy translation">⧉</button>
+        </div>
+      </div>
+      <div class="output" id="out"><span class="placeholder">Translation appears here…</span></div>
+      <div class="panel-foot">
+        <span class="chips">
+          Model:&nbsp;
+          <select id="model">
+            <option value="sarvam-translate:v1">sarvam-translate:v1</option>
+            <option value="mayura:v1">mayura:v1</option>
+          </select>
+          <select id="mode" title="Tone (mayura:v1 only)">
+            <option value="formal">formal</option>
+            <option value="modern-colloquial">modern-colloquial</option>
+            <option value="classic-colloquial">classic-colloquial</option>
+            <option value="code-mixed">code-mixed</option>
+          </select>
+        </span>
+        <span id="latency"></span>
+      </div>
+    </section>
+  </main>
+
+  <div class="bar">
+    <span class="hint">Tip: press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to translate · your key is stored only in this browser</span>
+    <div class="cta">
+      <button class="btn btn-ghost" id="clearAll">Reset</button>
+      <button class="btn btn-primary" id="go">Translate</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LANGS = {
+    "en-IN": { label: "English",  tag: "en-IN" },
+    "hi-IN": { label: "हिन्दी",    tag: "hi-IN" }
+  };
+  var MAXLEN = { "sarvam-translate:v1": 2000, "mayura:v1": 1000 };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var srcEl = $("src"), outEl = $("out"), keyEl = $("apiKey");
+  var srcLang = "en-IN", tgtLang = "hi-IN";
+
+  // ---- persist key (local only) ----
+  try {
+    var saved = localStorage.getItem("sarvam_api_key");
+    if (saved) { keyEl.value = saved; }
+  } catch(e){}
+  keyEl.addEventListener("input", function(){
+    try { localStorage.setItem("sarvam_api_key", keyEl.value.trim()); } catch(e){}
+    refreshStatus();
+  });
+
+  function refreshStatus(){
+    var has = keyEl.value.trim().length > 0;
+    $("dot").className = "dot " + (has ? "on" : "off");
+    $("statusText").textContent = has ? "Key saved locally" : "No API key";
+  }
+  refreshStatus();
+
+  // ---- language UI ----
+  function paintLangs(){
+    $("srcLabel").textContent = LANGS[srcLang].label;
+    $("srcTag").textContent   = LANGS[srcLang].tag;
+    $("tgtLabel").textContent = LANGS[tgtLang].label;
+    $("tgtTag").textContent   = LANGS[tgtLang].tag;
+    srcEl.placeholder = "Type or paste " + LANGS[srcLang].label + " here…  (Ctrl/⌘ + Enter to translate)";
+  }
+  paintLangs();
+
+  function setOut(html, cls){
+    outEl.innerHTML = cls ? '<span class="'+cls+'">'+html+'</span>' : html;
+  }
+
+  // ---- char counter ----
+  function updateCount(){
+    var m = MAXLEN[$("model").value] || 2000;
+    var n = srcEl.value.length;
+    $("count").textContent = n;
+    $("maxlen").textContent = m;
+    $("countWrap").style.color = (n > m) ? "var(--err)" : "";
+  }
+  srcEl.addEventListener("input", updateCount);
+  $("model").addEventListener("change", function(){
+    var mayura = $("model").value === "mayura:v1";
+    $("mode").disabled = !mayura;
+    if (!mayura) { $("mode").value = "formal"; }
+    updateCount();
+  });
+  $("mode").disabled = true; // sarvam-translate default
+  updateCount();
+
+  // ---- swap ----
+  $("swapBtn").addEventListener("click", function(){
+    var t = srcLang; srcLang = tgtLang; tgtLang = t;
+    var prev = srcEl.value;
+    var currentOut = outEl.dataset.plain || "";
+    srcEl.value = currentOut || prev;
+    paintLangs();
+    updateCount();
+    if (currentOut) { translate(); }
+  });
+
+  // ---- clear ----
+  $("clearBtn").addEventListener("click", function(){ srcEl.value=""; updateCount(); srcEl.focus(); });
+  $("clearAll").addEventListener("click", function(){
+    srcEl.value=""; setOut("Translation appears here…","placeholder");
+    outEl.dataset.plain=""; $("latency").textContent="";
+    updateCount(); srcEl.focus();
+  });
+
+  // ---- paste / copy ----
+  $("pasteBtn").addEventListener("click", async function(){
+    try {
+      var txt = await navigator.clipboard.readText();
+      srcEl.value = txt; updateCount();
+    } catch(e){ toast("Clipboard read blocked by the browser"); }
+  });
+  $("copyBtn").addEventListener("click", function(){
+    var t = outEl.dataset.plain || "";
+    if (!t) { toast("Nothing to copy yet"); return; }
+    navigator.clipboard.writeText(t).then(function(){ toast("Translation copied"); },
+      function(){ toast("Copy blocked by the browser"); });
+  });
+
+  // ---- listen (free, browser TTS) ----
+  $("speakBtn").addEventListener("click", function(){
+    var t = outEl.dataset.plain || "";
+    if (!t) { toast("Translate something first"); return; }
+    if (!("speechSynthesis" in window)) { toast("Speech not supported in this browser"); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(t);
+    u.lang = tgtLang;
+    window.speechSynthesis.speak(u);
+  });
+
+  // ---- toast ----
+  var toastTimer;
+  function toast(msg){
+    var el = $("toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2200);
+  }
+
+  // ---- translate ----
+  var busy = false;
+  async function translate(){
+    if (busy) return;
+    var text = srcEl.value.trim();
+    if (!text) { setOut("Type something to translate first.","err"); return; }
+    var key = keyEl.value.trim();
+    var useProxy = $("conn").value === "proxy";
+    if (!useProxy && !key) { setOut("Paste your Sarvam API key (top right) to translate.","err"); return; }
+
+    var m = MAXLEN[$("model").value] || 2000;
+    if (text.length > m) { setOut("Text is "+text.length+" chars — the limit for this model is "+m+".","err"); return; }
+
+    busy = true;
+    $("go").disabled = true;
+    setOut("Translating…","loading");
+    $("latency").textContent = "";
+    var t0 = performance.now();
+
+    var payload = {
+      input: text,
+      source_language_code: srcLang,
+      target_language_code: tgtLang,
+      model: $("model").value,
+      numerals_format: "international"
+    };
+    var g = $("gender").value;
+    if (g) payload.speaker_gender = g;
+    if ($("model").value === "mayura:v1") payload.mode = $("mode").value;
+
+    var url = useProxy ? "/api/translate" : "https://api.sarvam.ai/translate";
+    var headers = { "Content-Type": "application/json" };
+    if (!useProxy) headers["api-subscription-key"] = key;
+
+    try {
+      var res = await fetch(url, { method:"POST", headers:headers, body:JSON.stringify(payload) });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok) {
+        var msg = (data && data.error && (data.error.message || data.error.code)) || ("HTTP "+res.status);
+        if (res.status === 403 || res.status === 401) msg = "API key rejected — check it and try again.";
+        if (res.status === 429) msg = "Rate limit hit — wait a moment and retry.";
+        throw new Error(msg);
+      }
+      var out = data.translated_text || "";
+      outEl.dataset.plain = out;
+      setOut(out ? escapeHtml(out) : "(empty response)");
+      $("latency").textContent = Math.round(performance.now()-t0) + " ms";
+    } catch(err){
+      var hint = String(err && err.message || err);
+      if (/Failed to fetch|NetworkError|Load failed/i.test(hint)) {
+        hint = useProxy
+          ? "Couldn't reach the local proxy. Is server.py running on this port?"
+          : "Browser blocked the direct call (likely CORS). Switch the dropdown to “Local proxy” and run server.py.";
+      }
+      setOut(hint,"err");
+    } finally {
+      busy = false; $("go").disabled = false;
+    }
+  }
+  function escapeHtml(s){
+    return s.replace(/[&<>"]/g, function(c){
+      return ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" })[c];
+    });
+  }
+  $("go").addEventListener("click", translate);
+  srcEl.addEventListener("keydown", function(e){
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); translate(); }
+  });
+
+  srcEl.focus();
+})();
+</script>
+</body>
+</html>
